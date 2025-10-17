@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="Tetris clásico - Juega gratis">
+    <title>Tetris Game</title>
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVGV0cmlzIEdhbWUiLCJzaG9ydF9uYW1lIjoiVGV0cmlzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMxYTFhMmUiLCJ0aGVtZV9jb2xvciI6IiMxYTFhMmUiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTVRJNElpQm9aV2xuYUhROUlqRXlPQ0lnZUcxc2JuTTlJbWgwZEhBNkx5OTNkM2N1ZHpNdWIzSm5Mekl3TURBdmMzWm5JajQ4Y21WamRDQjNhV1IwYUQwaU1USTRJaUJvWldsbmFIUTlJakV5T0NJZ1ptbHNiRDBpSXpFMk1UWXhOaUl2UGp4eVpXTjBJSGc5SWpJd0lpQjVQU0l5TUNJZ2QybGtkR2c5SWpnNElpQm9aV2xuYUhROUlqZzRJaUJtYVd4c1BTSWpObVF5T1dVeklpOCtQSEpsWTNRZ2VEMGlORFFpSUhrOUlqUTBJaUIzYVdSMGFEMGlOREFpSUdobGFXZG9kRDBpTkRBaUlHWnBiR3c5SWlNeU1XRXpOMlVpTHo0OEwzTjJaejQ9Iiwic2l6ZXMiOiIxMjh4MTI4IiwidHlwZSI6ImltYWdlL3N2Zyt4bWwiLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn1dfQ==">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #1a1a2e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: background 0.3s ease;
+        }
+
+        body.theme-light {
+            background: #f0f0f0;
+            color: #333333;
+        }
+
+        body.theme-retro {
+            background: #0f380f;
+            color: #9bbc0f;
+        }
+
+        body.theme-neon {
+            background: #0a0a0a;
+            color: #00ffff;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .main-game {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            background: #16213e;
+            border: 3px solid #e94560;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-light .canvas-wrapper {
+            background: #ffffff;
+            border-color: #e94560;
+        }
+
+        body.theme-retro .canvas-wrapper {
+            background: #306230;
+            border-color: #9bbc0f;
+        }
+
+        body.theme-neon .canvas-wrapper {
+            background: #1a1a1a;
+            border-color: #ff00ff;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 200px;
+        }
+
+        .info-panel {
+            background: #16213e;
+            border: 2px solid #e94560;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        body.theme-light .info-panel {
+            background: #ffffff;
+            border-color: #e94560;
+        }
+
+        body.theme-retro .info-panel {
+            background: #306230;
+            border-color: #9bbc0f;
+        }
+
+        body.theme-neon .info-panel {
+            background: #1a1a1a;
+            border-color: #ff00ff;
+        }
+
+        .info-panel h2 {
+            color: #e94560;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        body.theme-light .info-panel h2 {
+            color: #333333;
+        }
+
+        body.theme-retro .info-panel h2 {
+            color: #9bbc0f;
+        }
+
+        body.theme-neon .info-panel h2 {
+            color: #ff00ff;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .stat-value {
+            color: #e94560;
+            font-weight: bold;
+        }
+
+        body.theme-retro .stat-value {
+            color: #9bbc0f;
+        }
+
+        body.theme-neon .stat-value {
+            color: #00ffff;
+        }
+
+        .next-piece {
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80px;
+        }
+
+        body.theme-light .next-piece {
+            background: #e0e0e0;
+        }
+
+        body.theme-retro .next-piece {
+            background: #0f380f;
+        }
+
+        body.theme-neon .next-piece {
+            background: #2a2a2a;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            background: #e94560;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        body.theme-retro button {
+            background: #9bbc0f;
+            color: #0f380f;
+        }
+
+        body.theme-neon button {
+            background: #ff00ff;
+            color: #0a0a0a;
+        }
+
+        .theme-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .theme-selector button {
+            padding: 10px;
+            font-size: 0.85em;
+        }
+
+        .mobile-controls {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .mobile-controls button {
+            padding: 20px;
+            font-size: 1.2em;
+            aspect-ratio: 1;
+        }
+
+        .mobile-controls .btn-down {
+            grid-column: 2;
+        }
+
+        .game-over-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .game-over-content {
+            background: #16213e;
+            border: 3px solid #e94560;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            animation: scaleIn 0.4s ease;
+        }
+
+        body.theme-light .game-over-content {
+            background: #ffffff;
+        }
+
+        body.theme-retro .game-over-content {
+            background: #306230;
+            border-color: #9bbc0f;
+        }
+
+        body.theme-neon .game-over-content {
+            background: #1a1a1a;
+            border-color: #ff00ff;
+        }
+
+        .game-over-content h1 {
+            color: #e94560;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        body.theme-retro .game-over-content h1 {
+            color: #9bbc0f;
+        }
+
+        body.theme-neon .game-over-content h1 {
+            color: #ff00ff;
+        }
+
+        .final-score {
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px;
+            }
+
+            .side-panel {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .mobile-controls {
+                display: grid;
+            }
+
+            canvas {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+
+        @media (orientation: landscape) and (max-width: 768px) {
+            .game-container {
+                flex-direction: row;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="main-game">
+            <div class="canvas-wrapper">
+                <canvas id="gameCanvas" width="300" height="600"></canvas>
+                <canvas id="particles" width="300" height="600"></canvas>
+            </div>
+            <div class="mobile-controls">
+                <button class="btn-left">◀</button>
+                <button class="btn-down">▼</button>
+                <button class="btn-right">▶</button>
+                <button class="btn-rotate" style="grid-column: 2;">🔄</button>
+                <button class="btn-drop" style="grid-column: 3;">⬇</button>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <div class="info-panel">
+                <h2>🎮 TETRIS</h2>
+                <div class="stat">
+                    <span class="stat-label">Puntuación:</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Nivel:</span>
+                    <span class="stat-value" id="level">1</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Líneas:</span>
+                    <span class="stat-value" id="lines">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Récord:</span>
+                    <span class="stat-value" id="highscore">0</span>
+                </div>
+                <div class="next-piece">
+                    <canvas id="nextCanvas" width="120" height="80"></canvas>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="pauseBtn">⏸ Pausa</button>
+                <button id="restartBtn">🔄 Reiniciar</button>
+                <button id="soundBtn">🔊 Sonido</button>
+                <div class="theme-selector">
+                    <button onclick="setTheme('dark')">Oscuro</button>
+                    <button onclick="setTheme('light')">Claro</button>
+                    <button onclick="setTheme('retro')">Retro</button>
+                    <button onclick="setTheme('neon')">Neón</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-over-screen" id="gameOverScreen">
+        <div class="game-over-content">
+            <h1>GAME OVER</h1>
+            <div class="final-score">
+                Puntuación Final: <span id="finalScore">0</span>
+            </div>
+            <div class="final-score" style="font-size: 1.2em;">
+                Récord: <span id="finalHighscore">0</span>
+            </div>
+            <button onclick="restartGame()" style="margin-top: 20px; width: 100%;">
+                🎮 Jugar de Nuevo
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Configuración del juego
+        const COLS = 10;
+        const ROWS = 20;
+        const BLOCK_SIZE = 30;
+        const LINES_PER_LEVEL = 10;
+
+        // Canvas
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const nextCanvas = document.getElementById('nextCanvas');
+        const nextCtx = nextCanvas.getContext('2d');
+        const particlesCanvas = document.getElementById('particles');
+        const particlesCtx = particlesCanvas.getContext('2d');
+
+        // Colores de las piezas
+        const COLORS = {
+            I: '#00f0f0',
+            O: '#f0f000',
+            T: '#a000f0',
+            S: '#00f000',
+            Z: '#f00000',
+            J: '#0000f0',
+            L: '#f0a000'
+        };
+
+        // Piezas del Tetris
+        const PIECES = {
+            I: [[1,1,1,1]],
+            O: [[1,1],[1,1]],
+            T: [[0,1,0],[1,1,1]],
+            S: [[0,1,1],[1,1,0]],
+            Z: [[1,1,0],[0,1,1]],
+            J: [[1,0,0],[1,1,1]],
+            L: [[0,0,1],[1,1,1]]
+        };
+
+        // Estado del juego
+        let board = [];
+        let score = 0;
+        let level = 1;
+        let lines = 0;
+        let highscore = parseInt(localStorage.getItem('tetrisHighscore')) || 0;
+        let gameRunning = false;
+        let gamePaused = false;
+        let currentPiece = null;
+        let nextPiece = null;
+        let pieceX = 0;
+        let pieceY = 0;
+        let dropCounter = 0;
+        let dropInterval = 1000;
+        let lastTime = 0;
+        let soundEnabled = true;
+        let pieceBag = [];
+        let particles = [];
+        let animationId = null;
+
+        // Audio Context
+        let audioCtx = null;
+        let audioUnlocked = false;
+
+        // Inicializar el tablero
+        function initBoard() {
+            board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+        }
+
+        // Funciones de audio
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function unlockAudio() {
+            if (!audioUnlocked && audioCtx) {
+                const buffer = audioCtx.createBuffer(1, 1, 22050);
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(audioCtx.destination);
+                source.start(0);
+                audioUnlocked = true;
+            }
+        }
+
+        function playSound(frequency, duration, type = 'sine') {
+            if (!soundEnabled || !audioUnlocked || !audioCtx) return;
+            try {
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        function playMoveSound() {
+            playSound(200, 0.05);
+        }
+
+        function playRotateSound() {
+            playSound(300, 0.08);
+        }
+
+        function playLineSound() {
+            playSound(400, 0.15);
+            setTimeout(() => playSound(500, 0.15), 100);
+        }
+
+        function playGameOverSound() {
+            playSound(200, 0.3);
+            setTimeout(() => playSound(150, 0.3), 200);
+            setTimeout(() => playSound(100, 0.5), 400);
+        }
+
+        // Sistema de bolsa para piezas
+        function refillBag() {
+            const types = Object.keys(PIECES);
+            pieceBag = [...types].sort(() => Math.random() - 0.5);
+        }
+
+        function getNextPieceType() {
+            if (pieceBag.length === 0) refillBag();
+            return pieceBag.pop();
+        }
+
+        function createPiece(type) {
+            return {
+                shape: PIECES[type].map(row => [...row]),
+                color: COLORS[type],
+                type: type
+            };
+        }
+
+        function drawBlock(context, x, y, color, size = BLOCK_SIZE) {
+            context.fillStyle = color;
+            context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
+            
+            // Brillo
+            context.fillStyle = 'rgba(255,255,255,0.2)';
+            context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
+            
+            // Sombra
+            context.fillStyle = 'rgba(0,0,0,0.3)';
+            context.fillRect(x * size + 1, y * size + size - 5, size - 2, 4);
+            
+            // Borde
+            context.strokeStyle = 'rgba(0,0,0,0.3)';
+            context.lineWidth = 1;
+            context.strokeRect(x * size + 1, y * size + 1, size - 2, size - 2);
+        }
+
+        function drawBoard() {
+            // Fondo
+            ctx.fillStyle = '#0f3460';
+            if (document.body.classList.contains('theme-light')) ctx.fillStyle = '#e0e0e0';
+            if (document.body.classList.contains('theme-retro')) ctx.fillStyle = '#0f380f';
+            if (document.body.classList.contains('theme-neon')) ctx.fillStyle = '#2a2a2a';
+            
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Cuadrícula
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 0.5;
+            for (let y = 0; y <= ROWS; y++) {
+                ctx.beginPath();
+                ctx.moveTo(0, y * BLOCK_SIZE);
+                ctx.lineTo(COLS * BLOCK_SIZE, y * BLOCK_SIZE);
+                ctx.stroke();
+            }
+            for (let x = 0; x <= COLS; x++) {
+                ctx.beginPath();
+                ctx.moveTo(x * BLOCK_SIZE, 0);
+                ctx.lineTo(x * BLOCK_SIZE, ROWS * BLOCK_SIZE);
+                ctx.stroke();
+            }
+
+            // Bloques del tablero
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    if (board[y][x]) {
+                        drawBlock(ctx, x, y, board[y][x]);
+                    }
+                }
+            }
+
+            // Pieza actual
+            if (currentPiece) {
+                currentPiece.shape.forEach((row, dy) => {
+                    row.forEach((value, dx) => {
+                        if (value) {
+                            drawBlock(ctx, pieceX + dx, pieceY + dy, currentPiece.color);
+                        }
+                    });
+                });
+            }
+        }
+
+        function drawNextPiece() {
+            // Fondo
+            nextCtx.fillStyle = '#0f3460';
+            if (document.body.classList.contains('theme-light')) nextCtx.fillStyle = '#e0e0e0';
+            if (document.body.classList.contains('theme-retro')) nextCtx.fillStyle = '#0f380f';
+            if (document.body.classList.contains('theme-neon')) nextCtx.fillStyle = '#2a2a2a';
+            
+            nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+
+            if (nextPiece) {
+                const offsetX = (4 - nextPiece.shape[0].length) / 2;
+                const offsetY = (2.5 - nextPiece.shape.length) / 2;
+                nextPiece.shape.forEach((row, dy) => {
+                    row.forEach((value, dx) => {
+                        if (value) {
+                            drawBlock(nextCtx, offsetX + dx, offsetY + dy, nextPiece.color, 25);
+                        }
+                    });
+                });
+            }
+        }
+
+        function collision(piece, x, y) {
+            for (let dy = 0; dy < piece.shape.length; dy++) {
+                for (let dx = 0; dx < piece.shape[dy].length; dx++) {
+                    if (piece.shape[dy][dx]) {
+                        const newX = x + dx;
+                        const newY = y + dy;
+                        if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
+                        if (newY >= 0 && board[newY][newX]) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function rotate(piece) {
+            const newShape = piece.shape[0].map((_, i) =>
+                piece.shape.map(row => row[i]).reverse()
+            );
+            return {
+                ...piece,
+                shape: newShape
+            };
+        }
+
+        function merge() {
+            currentPiece.shape.forEach((row, dy) => {
+                row.forEach((value, dx) => {
+                    if (value) {
+                        if (pieceY + dy >= 0) {
+                            board[pieceY + dy][pieceX + dx] = currentPiece.color;
+                        }
+                    }
+                });
+            });
+        }
+
+        function clearLines() {
+            let linesCleared = 0;
+            const linesToClear = [];
+
+            for (let y = ROWS - 1; y >= 0; y--) {
+                if (board[y].every(cell => cell !== 0)) {
+                    linesToClear.push(y);
+                    linesCleared++;
+                }
+            }
+
+            if (linesCleared > 0) {
+                playLineSound();
+                createLineParticles(linesToClear);
+                
+                // Eliminar líneas
+                linesToClear.forEach(y => {
+                    board.splice(y, 1);
+                    board.unshift(Array(COLS).fill(0));
+                });
+
+                // Actualizar puntuación
+                const points = [100, 300, 500, 800];
+                score += points[Math.min(linesCleared - 1, 3)] * level;
+                lines += linesCleared;
+
+                // Subir de nivel
+                const newLevel = Math.floor(lines / LINES_PER_LEVEL) + 1;
+                if (newLevel > level) {
+                    level = newLevel;
+                    dropInterval = Math.max(100, 1000 - (level - 1) * 100);
+                }
+
+                updateStats();
+            }
+        }
+
+        function createLineParticles(lineIndices) {
+            lineIndices.forEach(y => {
+                for (let x = 0; x < COLS; x++) {
+                    for (let i = 0; i < 3; i++) {
+                        particles.push({
+                            x: x * BLOCK_SIZE + BLOCK_SIZE / 2,
+                            y: y * BLOCK_SIZE + BLOCK_SIZE / 2,
+                            vx: (Math.random() - 0.5) * 4,
+                            vy: (Math.random() - 0.5) * 4 - 2,
+                            life: 1,
+                            color: board[y][x]
+                        });
+                    }
+                }
+            });
+        }
+
+        function updateParticles() {
+            particlesCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+            
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.2;
+                p.life -= 0.02;
+
+                if (p.life > 0) {
+                    particlesCtx.fillStyle = p.color;
+                    particlesCtx.globalAlpha = p.life;
+                    particlesCtx.fillRect(p.x - 2, p.y - 2, 4, 4);
+                    particlesCtx.globalAlpha = 1;
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        function spawnPiece() {
+            if (!nextPiece) {
+                nextPiece = createPiece(getNextPieceType());
+            }
+            currentPiece = nextPiece;
+            nextPiece = createPiece(getNextPieceType());
+            pieceX = Math.floor(COLS / 2) - Math.floor(currentPiece.shape[0].length / 2);
+            pieceY = 0;
+
+            if (collision(currentPiece, pieceX, pieceY)) {
+                gameOver();
+                return;
+            }
+
+            drawNextPiece();
+        }
+
+        function moveDown() {
+            if (!gameRunning || gamePaused) return;
+            pieceY++;
+            if (collision(currentPiece, pieceX, pieceY)) {
+                pieceY--;
+                merge();
+                clearLines();
+                spawnPiece();
+            }
+            dropCounter = 0;
+        }
+
+        function moveLeft() {
+            if (!gameRunning || gamePaused) return;
+            pieceX--;
+            if (collision(currentPiece, pieceX, pieceY)) {
+                pieceX++;
+            } else {
+                playMoveSound();
+            }
+        }
+
+        function moveRight() {
+            if (!gameRunning || gamePaused) return;
+            pieceX++;
+            if (collision(currentPiece, pieceX, pieceY)) {
+                pieceX--;
+            } else {
+                playMoveSound();
+            }
+        }
+
+        function rotatePiece() {
+            if (!gameRunning || gamePaused) return;
+            const rotated = rotate(currentPiece);
+            const originalX = pieceX;
+            
+            // Intentar rotación con wall kicks
+            const kicks = [0, -1, 1, -2, 2];
+            for (let kick of kicks) {
+                pieceX = originalX + kick;
+                if (!collision(rotated, pieceX, pieceY)) {
+                    currentPiece = rotated;
+                    playRotateSound();
+                    return;
+                }
+            }
+            pieceX = originalX;
+        }
+
+        function hardDrop() {
+            if (!gameRunning || gamePaused) return;
+            while (!collision(currentPiece, pieceX, pieceY + 1)) {
+                pieceY++;
+                score += 2;
+            }
+            merge();
+            clearLines();
+            spawnPiece();
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            document.getElementById('lines').textContent = lines;
+            document.getElementById('highscore').textContent = highscore;
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            playGameOverSound();
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalHighscore').textContent = highscore;
+            document.getElementById('gameOverScreen').style.display = 'flex';
+        }
+
+        function pauseGame() {
+            gamePaused = !gamePaused;
+            document.getElementById('pauseBtn').textContent = gamePaused ? '▶ Reanudar' : '⏸ Pausa';
+            if (!gamePaused && gameRunning) {
+                lastTime = performance.now();
+                gameLoop();
+            }
+        }
+
+        function restartGame() {
+            initBoard();
+            score = 0;
+            level = 1;
+            lines = 0;
+            dropInterval = 1000;
+            particles = [];
+            pieceBag = [];
+            nextPiece = null;
+            document.getElementById('gameOverScreen').style.display = 'none';
+            startGame();
+        }
+
+        function startGame() {
+            gameRunning = true;
+            gamePaused = false;
+            document.getElementById('pauseBtn').textContent = '⏸ Pausa';
+            spawnPiece();
+            updateStats();
+            lastTime = performance.now();
+            if (animationId) cancelAnimationFrame(animationId);
+            gameLoop();
+        }
+
+        function gameLoop(time = 0) {
+            if (!gameRunning) return;
+            const deltaTime = time - lastTime;
+            lastTime = time;
+
+            if (!gamePaused) {
+                dropCounter += deltaTime;
+                if (dropCounter > dropInterval) {
+                    moveDown();
+                }
+                drawBoard();
+                updateParticles();
+            }
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function setTheme(theme) {
+            document.body.className = '';
+            if (theme !== 'dark') {
+                document.body.classList.add(`theme-${theme}`);
+            }
+            drawBoard();
+            drawNextPiece();
+        }
+
+        // Eventos de botones
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            if (gameRunning) pauseGame();
+        });
+
+        document.getElementById('restartBtn').addEventListener('click', restartGame);
+
+        document.getElementById('soundBtn').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundBtn').textContent = soundEnabled ? '🔊 Sonido' : '🔇 Silencio';
+            if (soundEnabled) unlockAudio();
+        });
+
+        // Controles táctiles
+        document.querySelector('.btn-left').addEventListener('click', moveLeft);
+        document.querySelector('.btn-right').addEventListener('click', moveRight);
+        document.querySelector('.btn-down').addEventListener('click', moveDown);
+        document.querySelector('.btn-rotate').addEventListener('click', rotatePiece);
+        document.querySelector('.btn-drop').addEventListener('click', hardDrop);
+
+        // Controles de teclado
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+            unlockAudio();
+            switch(e.key) {
+                case 'ArrowLeft': e.preventDefault(); moveLeft(); break;
+                case 'ArrowRight': e.preventDefault(); moveRight(); break;
+                case 'ArrowDown': e.preventDefault(); moveDown(); break;
+                case 'ArrowUp': e.preventDefault(); rotatePiece(); break;
+                case ' ': e.preventDefault(); hardDrop(); break;
+                case 'p': case 'P': e.preventDefault(); pauseGame(); break;
+            }
+        });
+
+        // Inicialización
+        window.addEventListener('load', () => {
+            initBoard();
+            highscore = parseInt(localStorage.getItem('tetrisHighscore')) || 0;
+            document.getElementById('highscore').textContent = highscore;
+            initAudio();
+            startGame();
+        });
+    </script>
+</body>
+</html>
